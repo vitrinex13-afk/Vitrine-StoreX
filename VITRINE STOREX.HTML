@@ -1,0 +1,356 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vitrine StoreX — Ebooks & Produtos</title>
+  <style>
+    :root{ --bg:#071022; --card:#0b1220; --accent:#06b6d4; --muted:#9ca3af; color-scheme: dark }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto;background:linear-gradient(180deg,#071126,#041126);color:#e6eef6;position:relative;overflow-x:hidden}
+    .wrap{max-width:1100px;margin:28px auto;padding:20px;position:relative;z-index:2}
+    header{display:flex;justify-content:space-between;align-items:center}
+    nav a{color:var(--muted);margin-left:14px;text-decoration:none}
+    .hero{padding:28px 0}
+    .btn{background:var(--accent);color:#042033;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:600}
+    section{margin-top:22px}
+    footer{margin-top:30px;color:var(--muted);font-size:0.9rem;text-align:center}
+    /* Canvas backdrop styling */
+    #particle-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.95}
+  </style>
+</head>
+<body>
+  <!-- Canvas only on pages we want animated -->
+  <canvas id="particle-canvas"></canvas>
+
+  <div class="wrap">
+    <header>
+      <div>
+        <h1 style="margin:0">Vitrine StoreX</h1>
+        <div style="color:var(--muted);font-size:0.95rem">Ebooks • Outros • Roupas • Eletrônicos</div>
+      </div>
+      <nav>
+        <a href="ebooks.html">Ebooks</a>
+        <a href="outros.html">Outros</a>
+        <a href="roupa.html">Roupa</a>
+        <a href="eletronicos.html">Eletrônicos</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h2>Bem-vindo(a) à Vitrine StoreX</h2>
+        <p style="color:var(--muted)">Navegue pelos ebooks e por produtos da Shopee. Clique em cada seção para ver a página completa do item.</p>
+        <p style="margin-top:12px"><a class="btn" href="ebooks.html">Ir para Ebooks</a></p>
+      </section>
+
+      <section>
+        <h3>Visão rápida</h3>
+        <ul style="color:var(--muted)">
+          <li>Ebooks: biblioteca digital com explicação de redirecionamento.</li>
+          <li>Outros: página de produtos variados com botão para Shopee.</li>
+          <li>Roupa: página individual do produto com botão para Shopee.</li>
+          <li>Eletrônicos: página individual do produto com botão para Shopee.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer>
+      © 2025 Vitrine — Todos os direitos reservados.
+    </footer>
+  </div>
+
+  <script>
+  // Particle background (few, soft, blue-cyan particles) - lightweight
+  (function(){
+    const canvas = document.getElementById('particle-canvas');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w=0,h=0,dpr=1;
+    function resize(){
+      dpr = window.devicePixelRatio || 1;
+      w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    window.addEventListener('resize', resize, {passive:true});
+    resize();
+
+    // Particle settings (minimalist)
+    const PARTICLE_COUNT = Math.max(18, Math.round((w*h)/80000)); // adapt to viewport but keep few
+    const particles = [];
+    const color = 'rgba(6,182,212,'; // #06b6d4 base with variable alpha
+
+    function rand(min,max){return Math.random()*(max-min)+min}
+
+    for(let i=0;i<PARTICLE_COUNT;i++){
+      particles.push({
+        x: rand(0,w),
+        y: rand(0,h),
+        r: rand(3,10),
+        vx: rand(-0.15,0.15),
+        vy: rand(-0.05,0.05),
+        alpha: rand(0.06,0.18),
+        phase: rand(0,Math.PI*2)
+      });
+    }
+
+    let last = performance.now();
+    function step(now){
+      const dt = Math.min(40, now - last)/1000; last = now;
+      ctx.clearRect(0,0,w,h);
+      // subtle radial gradient overlay to add depth
+      const g = ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'rgba(7,17,34,0.18)');
+      g.addColorStop(1,'rgba(4,9,20,0.55)');
+      ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+
+      for(const p of particles){
+        // gentle movement
+        p.x += p.vx * (40*dt);
+        p.y += p.vy * (40*dt);
+        // slight floating oscillation
+        p.phase += dt*0.6;
+        const sway = Math.sin(p.phase)*0.35;
+        // wrap around edges softly
+        if(p.x < -50) p.x = w + 20;
+        if(p.x > w + 50) p.x = -20;
+        if(p.y < -50) p.y = h + 20;
+        if(p.y > h + 50) p.y = -20;
+
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*4);
+        grad.addColorStop(0, color + (p.alpha + 0.18*sway).toFixed(3) + ')');
+        grad.addColorStop(0.6, color + (p.alpha*0.55).toFixed(3) + ')');
+        grad.addColorStop(1, color + '0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  })();
+  </script>
+</body>
+</html>
+
+
+<!-- ebooks.html -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Biblioteca Digital — Ebooks</title>
+  <style>
+    :root{ --bg:#071022; --accent:#06b6d4; --muted:#9ca3af }
+    html,body{height:100%}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto;background:linear-gradient(180deg,#071126,#041126);color:#e6eef6;position:relative}
+    .container{max-width:1000px;margin:28px auto;padding:20px;position:relative;z-index:2}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+    .card{background:rgba(255,255,255,0.02);padding:16px;border-radius:10px}
+    .btn{background:var(--accent);color:#042033;padding:10px 12px;border-radius:8px;text-decoration:none}
+    .info{background:rgba(255,255,255,0.03);padding:14px;border-radius:8px;margin-top:18px;color:var(--muted)}
+    /* Canvas backdrop styling */
+    #particle-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.95}
+  </style>
+</head>
+<body>
+  <canvas id="particle-canvas"></canvas>
+  <div class="container">
+    <h1>Biblioteca Digital — Ebooks</h1>
+    <p style="color:var(--muted)">Navegue pelos nossos títulos e saiba como funciona o redirecionamento para a página de compra.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>💻 Marketing Digital e Empreendedorismo Online: Do Básico ao Avançado</h3>
+        <p style="color:var(--muted)">PDF • 10 páginas</p>
+        <p><a class="btn" href="https://pay.kiwify.com.br/7R5QNjl" target="_blank">Comprar</a> <a class="btn" href="#" style="background:transparent;border:1px solid var(--accent);color:var(--accent);margin-left:8px">Amostra</a></p>
+      </div>
+
+      <div class="card">
+        <h3>💡“Meu Mundo Azul” 3 E-books💡</h3>
+        <p style="color:var(--muted)">PDF • Total 30 páginas</p>
+        <p><a class="btn" href="https://pay.kiwify.com.br/3pGdaJN" target="_blank">Comprar</a> <a class="btn" href="#" style="background:transparent;border:1px solid var(--accent);color:var(--accent);margin-left:8px">Amostra</a></p>
+      </div>
+
+      <div class="card">
+        <h3>🥗 Como cuidar da saúde - 5 E-books 🥗</h3>
+        <p style="color:var(--muted)">PDF • Total 50 páginas</p>
+        <p><a class="btn" href="https://pay.kiwify.com.br/tT6cbru" target="_blank">Comprar</a> <a class="btn" href="#" style="background:transparent;border:1px solid var(--accent);color:var(--accent);margin-left:8px">Amostra</a></p>
+      </div>
+    </div>
+
+    <div class="info">
+      <h2>Como funciona o redirecionamento</h2>
+      <p>E-book: Ao clicar em "Comprar", você será levado a um site de pagamento seguro desenvolvido por Kiwify. Após compra a entrega do ebook são processadas por esse site. Após o pagamento, o arquivo estará disponível para download. você podera pagar com (Cartão, Pix e boletos).------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	  Shoppe: Ao ser direcionado(a) a pagina de compra vc podera fazer o pagamento com qualquer tipo de (Bancos, pix, e etc.) após a compra do produto você irá receber ele através do correio.</p>
+    </div>
+  </div>
+
+  <script>
+  // Same lightweight particle script for the ebooks page
+  (function(){
+    const canvas = document.getElementById('particle-canvas');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w=0,h=0,dpr=1;
+    function resize(){
+      dpr = window.devicePixelRatio || 1;
+      w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    window.addEventListener('resize', resize, {passive:true});
+    resize();
+
+    const PARTICLE_COUNT = Math.max(18, Math.round((w*h)/80000));
+    const particles = [];
+    const color = 'rgba(6,182,212,';
+    function rand(min,max){return Math.random()*(max-min)+min}
+    for(let i=0;i<PARTICLE_COUNT;i++){
+      particles.push({x: rand(0,w), y: rand(0,h), r: rand(3,10), vx: rand(-0.15,0.15), vy: rand(-0.05,0.05), alpha: rand(0.06,0.18), phase: rand(0,Math.PI*2)});
+    }
+    let last = performance.now();
+    function step(now){
+      const dt = Math.min(40, now - last)/1000; last = now;
+      ctx.clearRect(0,0,w,h);
+      const g = ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'rgba(7,17,34,0.18)');
+      g.addColorStop(1,'rgba(4,9,20,0.55)');
+      ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+      for(const p of particles){
+        p.x += p.vx * (40*dt);
+        p.y += p.vy * (40*dt);
+        p.phase += dt*0.6;
+        const sway = Math.sin(p.phase)*0.35;
+        if(p.x < -50) p.x = w + 20;
+        if(p.x > w + 50) p.x = -20;
+        if(p.y < -50) p.y = h + 20;
+        if(p.y > h + 50) p.y = -20;
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r*4);
+        grad.addColorStop(0, color + (p.alpha + 0.18*sway).toFixed(3) + ')');
+        grad.addColorStop(0.6, color + (p.alpha*0.55).toFixed(3) + ')');
+        grad.addColorStop(1, color + '0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  })();
+  </script>
+</body>
+</html>
+
+
+<!-- outros.html -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Outros Produtos — Shopee</title>
+  <style>
+    body{margin:0;font-family:Inter, system-ui;background:#071022;color:#e6eef6}
+    .wrap{max-width:900px;margin:28px auto;padding:20px}
+    .product{display:flex;gap:18px;align-items:center}
+    .img{width:260px;height:260px;background:linear-gradient(135deg,#0b1220,#07243a);display:flex;align-items:center;justify-content:center;border-radius:12px}
+    .btn{background:#06b6d4;color:#042033;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:600}
+    .meta{color:#9ca3af}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Produtos Variados — Shopee</h1>
+    <div class="product">
+      <div class="img">Imagem do Produto</div>
+      <div>
+        <p class="meta">Categoria: acessórios, utilidades, presentes e mais</p>
+        <p>Descrição: Explore produtos diversos disponíveis na Shopee. Ideal para quem busca novidades e promoções exclusivas.</p>
+        <p style="margin-top:10px"><a class="btn" href="https://shopee.com.br/exemplo-outros" target="_blank">Ir para Shopee</a></p>
+        <p class="meta" style="margin-top:10px">Dica: verifique o frete grátis e avaliações dos vendedores.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+
+<!-- roupa.html -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Roupa — Produto Shopee</title>
+  <style>
+    body{margin:0;font-family:Inter, system-ui;background:#071022;color:#e6eef6}
+    .wrap{max-width:900px;margin:28px auto;padding:20px}
+    .product{display:flex;gap:18px;align-items:center}
+    .img{width:260px;height:260px;background:linear-gradient(135deg,#0b1220,#07243a);display:flex;align-items:center;justify-content:center;border-radius:12px}
+    .btn{background:#06b6d4;color:#042033;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:600}
+    .meta{color:#9ca3af}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Camiseta Casual — Estampa Moderna</h1>
+    <div class="product">
+      <div class="img">Imagem da Roupa</div>
+      <div>
+        <p class="meta">Algodão | Vários tamanhos | Lavável</p>
+        <p>Descrição: Camiseta confortável, corte moderno e estampa resistente. Perfeita para o dia a dia.</p>
+        <p style="margin-top:10px"><a class="btn" href="https://shopee.com.br/exemplo-roupa" target="_blank">Ir para Shopee</a></p>
+        <p class="meta" style="margin-top:10px">Dica: confira a política de troca do vendedor.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+
+<!-- eletronicos.html -->
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Eletrônicos — Produto Shopee</title>
+  <style>
+    body{margin:0;font-family:Inter, system-ui;background:#071022;color:#e6eef6}
+    .wrap{max-width:900px;margin:28px auto;padding:20px}
+    .product{display:flex;gap:18px;align-items:center}
+    .img{width:260px;height:260px;background:linear-gradient(135deg,#0b1220,#07243a);display:flex;align-items:center;justify-content:center;border-radius:12px}
+    .btn{background:#06b6d4;color:#042033;padding:10px 14px;border-radius:10px;text-decoration:none;font-weight:600}
+    .meta{color:#9ca3af}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Fone Bluetooth — Alta Qualidade</h1>
+    <div class="product">
+      <div class="img">Imagem do Eletrônico</div>
+      <div>
+        <p class="meta">Bluetooth 5.0 | Cancelamento de Ruído | Bateria 20h</p>
+        <p>Descrição: Fone sem fio com som claro e ótima autonomia. Compatível com celulares e notebooks.</p>
+        <p style="margin-top:10px"><a class="btn" href="https://shopee.com.br/exemplo-eletronico" target="_blank">Ir para Shopee</a></p>
+        <p class="meta" style="margin-top:10px">Dica: confira reviews do produto e prazo de entrega.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
